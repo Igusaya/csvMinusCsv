@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <meta http-equiv="x-ua-compatible" content="IE=edge">
-        <title>template</title>
+        <title>CSV Minus CSV</title>
         <link href="_common/css/style.css" rel="stylesheet" type="text/css">
     </head>
     <body>
@@ -120,7 +120,7 @@
                     twoDArray.push(resultToArray(diffArray[i], ','));
                 }
 
-                var tbody = document.getElementById('tableId');
+                var tbody = $('#tableId');
                 for(var i of twoDArray){
                     var tr = document.createElement('tr');
                     for(var j of i){
@@ -128,15 +128,15 @@
                         td.innerHTML = j;
                         tr.appendChild(td);
                     }
-                    console.log(tr);
-                    console.log(tbody);
                     tbody.appendChild(tr);
                 }
 
                 // DownLoadリンク作成
-                var dlDiv = document.getElementById('dl');
-                console.log(dlDiv);
+                var dlDiv = $('#dl');
                 dlDiv.innerHTML = '<a id="download" href="#" download="diff.csv" onclick="textDownLoad()">Down Load</a>';
+
+                // リロード防止
+                return false;
             }
 
             // 出力処理
