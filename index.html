@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta http-equiv="x-ua-compatible" content="IE=edge">
+        <title>template</title>
+        <link href="_common/css/style.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <header>
+            <div class="header-contents">
+                <h1>差分出力</h1>
+                <h2>csvの差分を出力する</h2>
+            </div><!-- /.header-contents -->
+        </header>
+        <div class="main-wrapper">
+            <section>
+                <form action="#" id="form">
+                    <p>old file: <input id="afile" type="file" value="old file"></p>
+                    <p>new file: <input id="bfile" type="file"></p>
+                    <input id="submit" type="submit" value="開始">
+                    <div id="info"></div>
+                </form>
+                <table>
+                    <tbody id="tableId">
+                        <!-- 差分表示位置 -->
+                    </tbody>
+                </table>
+                <div id="dl"></div>
+            </section>
+        </div><!-- /.main-wrapper -->
+        <footer>igusaya</footer>
+        <script>
+
+            // ------------------------------
+            var afileArray;
+            var bfileArray;
+            var twoDArray;
+            // ------------------------------
+
+            function $(id) {
+                return document.querySelector(id);
+            }
+
+            // 昇順ソート処理
+            function sort(array) {
+                array.sort(function(a, b) {
+                    if(a < b) return -1;
+                    if(a > b) return 1;
+                    return 0;
+                });
+            }
+
+            // ファイル内容配列化
+            function resultToArray(text, sep){
+                var textArray = text.split(sep);
+                return textArray;
+            }
+
+            // 成形処理
+            function moldFile(text){
+                var array = resultToArray(text, '\n');
+                array.pop();
+                sort(array);
+                return array;
+            }
+
+            // 突合処理
+            function arrayAMinusArrayB(arrayA, arrayB){
+
+                var diffArray = new Array();
+                for(var i in arrayB) {
+                    if(!arrayA.includes(arrayB[i])) {
+                        diffArray.push(arrayB[i]);
+                    }
+                }
+                return diffArray;
+            }
+
+            function twoDArrayToString(tda) {
+                var array = new Array();
+                for(var i of tda) {
+                    array.push(i.join(','));
+                }
+                return array.join('\n');
+            }
+
+            // oldfileチェンジリスナ
+            $('#afile').onchange = function(evt) {
+                var afile = evt.target.files[0];
+                var readerA = new FileReader();
+                readerA.onload = function(evt) {
+                    afileArray = moldFile(evt.target.result);
+                }
+                readerA.readAsText(afile, 'Shift_JIS');
+            }
+
+            // newfileチェンジリスナ
+            $('#bfile').onchange = function(evt) {
+                var bfile = evt.target.files[0];
+                var readerB = new FileReader();
+                readerB.onload = function(evt) {
+                    bfileArray = moldFile(evt.target.result);
+                }
+                readerB.readAsText(bfile, 'Shift_JIS');
+            }
+
+            // submit押下
+            $('#form').onsubmit = function(evt) {
+
+                // TODO バリデーション
+
+                // 突合処理
+                var diffArray = arrayAMinusArrayB(afileArray, bfileArray);
+
+                // document表示
+                twoDArray = new Array();
+                for(var i in diffArray) {
+                    twoDArray.push(resultToArray(diffArray[i], ','));
+                }
+
+                var tbody = document.getElementById('tableId');
+                for(var i of twoDArray){
+                    var tr = document.createElement('tr');
+                    for(var j of i){
+                        var td = document.createElement('td');
+                        td.innerHTML = j;
+                        tr.appendChild(td);
+                    }
+                    console.log(tr);
+                    console.log(tbody);
+                    tbody.appendChild(tr);
+                }
+
+                // DownLoadリンク作成
+                var dlDiv = document.getElementById('dl');
+                console.log(dlDiv);
+                dlDiv.innerHTML = '<a id="download" href="#" download="diff.csv" onclick="textDownLoad()">Down Load</a>';
+            }
+
+            // 出力処理
+            function textDownLoad() {
+                var bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+                var content = twoDArrayToString(twoDArray);
+                var blob = new Blob([ bom, content ], { "type" : "text/csv" });
+                document.getElementById("download").href = window.URL.createObjectURL(blob);
+            }
+
+        </script>
+    </body>
+</html>
